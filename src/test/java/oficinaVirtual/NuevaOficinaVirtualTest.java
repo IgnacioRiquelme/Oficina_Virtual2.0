@@ -322,7 +322,7 @@ public class NuevaOficinaVirtualTest {
                 }
             }
             // Pausa para carga de página
-            base.pausaFijaSeg(3);
+            base.pausaFijaSeg(5);
             // Captura: Noticias desde acceso directo
             base.capturaPantallaCompletaF("Noticias", "Desde_Acceso_Directo");
             System.out.println(">>>>>> Noticias desde acceso directo capturado");
@@ -428,12 +428,22 @@ public class NuevaOficinaVirtualTest {
             System.out.println(">>>>>> Ventana de Cápsulas de ayuda cerrada, retornado a principal");
             test.log(Status.INFO, "Ventana de Cápsulas de ayuda cerrada, retornado a principal");
 
-            // Cerrar ventana emergente con botón "Cerrar"
-            base.pausaPorElementoVisible(By.cssSelector("a.boton.bg-gris"));
-            base.click(By.cssSelector("a.boton.bg-gris"));
+            // Cerrar ventana emergente con botón "Cerrar" (helper localizado)
+            base.cerrarModalSiExiste();
             base.pausaFijaSeg(2);
-            System.out.println(">>>>>> Ventana emergente cerrada");
-            test.log(Status.INFO, "Ventana emergente cerrada");
+            System.out.println(">>>>>> Ventana emergente (si existía) cerrada");
+            test.log(Status.INFO, "Ventana emergente (si existía) cerrada");
+
+            // Cerrar modal de error si existe
+            try {
+                if (base.elementoVisible(By.cssSelector("div[aria-labelledby='modal-error'] a.boton.bg-gris"))) {
+                    WebElement closeModal = driver.findElement(By.cssSelector("div[aria-labelledby='modal-error'] a.boton.bg-gris"));
+                    ((JavascriptExecutor) driver).executeScript("arguments[0].click();", closeModal);
+                    base.pausaFijaSeg(2);
+                }
+            } catch (Exception e) {
+                // No modal de error
+            }
 
             // Cerrar barra lateral (menú desplegable)
             base.click(By.id("menu-desplegable"));
@@ -450,8 +460,19 @@ public class NuevaOficinaVirtualTest {
             System.out.println(">>>>>> Hover sobre acceso directo de Cápsulas de ayuda capturado");
             test.log(Status.INFO, "Hover sobre acceso directo de Cápsulas de ayuda capturado");
 
+            // Hover sobre acceso directo de Cápsulas de ayuda
+            base.pausaPorElementoVisible(By.xpath("//article[@id='contenedorDashboardRapido']/section/a[@title='Cápsulas de ayuda']"));
+            actions.moveToElement(driver.findElement(By.xpath("//article[@id='contenedorDashboardRapido']/section/a[@title='Cápsulas de ayuda']"))).perform();
+            base.pausaFijaSeg(1);
+            // Captura: Hover sobre acceso directo de Cápsulas de ayuda
+            base.capturaPantallaCompletaF("CapsulasAyuda", "Hover_Acceso_Directo");
+            System.out.println(">>>>>> Hover sobre acceso directo de Cápsulas de ayuda capturado");
+            test.log(Status.INFO, "Hover sobre acceso directo de Cápsulas de ayuda capturado");
+
             // Click en acceso directo de Cápsulas de ayuda
             base.click(By.xpath("//article[@id='contenedorDashboardRapido']/section/a[@title='Cápsulas de ayuda']"));
+            // Esperar que se abra el modal
+            base.pausaPorElementoVisible(By.cssSelector(".modal"));
             base.pausaFijaSeg(2);
             // Captura: Cápsulas de ayuda desde acceso directo
             base.capturaPantallaCompletaF("CapsulasAyuda", "Desde_Acceso_Directo");

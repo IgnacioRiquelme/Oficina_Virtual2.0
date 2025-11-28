@@ -489,6 +489,58 @@ public class CC_Base {
         }
     }
 
+    // Cierra un modal específico si existe (usado sólo para el recuadro final con botón "Cerrar")
+    public void cerrarModalSiExiste() {
+        try {
+            // Intentar localizar los selectores más habituales
+            By[] posibles = new By[] {
+                By.cssSelector("div[aria-labelledby='modal-error'] a.boton.bg-gris"),
+                By.cssSelector("a.boton.bg-gris"),
+                By.cssSelector("a.pestanas-cerrar"),
+                By.cssSelector("em.bci-icon.cerrar"),
+            };
+
+            boolean cerrado = false;
+            for (By sel : posibles) {
+                try {
+                    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+                    WebElement el = wait.until(ExpectedConditions.presenceOfElementLocated(sel));
+                    if (el != null && el.isDisplayed()) {
+                        try {
+                            // Preferir JS click para evitar interceptaciones
+                            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", el);
+                        } catch (Exception jsEx) {
+                            try {
+                                el.click();
+                            } catch (Exception clickEx) {
+                                // ignore and continue
+                            }
+                        }
+                        pausaFijaSeg(1);
+                        cerrado = true;
+                        break;
+                    }
+                } catch (Exception e) {
+                    // No encontrado con este selector, probar siguiente
+                }
+            }
+
+            if (!cerrado) {
+                // Último recurso: remover la clase show y backdrops via JS para desbloquear UI
+                try {
+                    String script = "var ms = document.querySelectorAll('.modal.show'); ms.forEach(function(m){m.classList.remove('show'); m.style.display='none';}); var bs = document.querySelectorAll('.modal-backdrop.show'); bs.forEach(function(b){b.parentNode.removeChild(b);});";
+                    ((JavascriptExecutor) driver).executeScript(script);
+                    pausaFijaSeg(1);
+                } catch (Exception ex) {
+                    // Si tampoco funciona, lo registramos
+                    System.out.println(">>>>>> cerrarModalSiExiste: no pudo eliminar modal por JS: " + ex.getMessage());
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println(">>>>>> cerrarModalSiExiste: error general: " + ex.getMessage());
+        }
+    }
+
     //validar mensaje de error
     public void obtenerUrl(){
         String laUrl = driver.getCurrentUrl();
