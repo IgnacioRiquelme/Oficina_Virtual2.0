@@ -335,6 +335,37 @@ public class NuevaOficinaVirtualTest {
             System.out.println(">>>>>> Retornado a pestaña principal");
             test.log(Status.INFO, "Retornado a pestaña principal");
 
+            // Antes del Paso 10: detectar y cerrar ventanas secundarias (ej. Noticias)
+            // Esto captura la última pantalla de cada ventana secundaria y la cierra,
+            // asegurando que no queden pestañas abiertas antes de entrar a Cápsulas de ayuda.
+            try {
+                Set<String> handlesAntesCapsulas = driver.getWindowHandles();
+                for (String h : handlesAntesCapsulas) {
+                    if (!h.equals(ventanaPrincipalOriginal)) {
+                        try {
+                            driver.switchTo().window(h);
+                            base.pausaFijaSeg(1);
+                            // Captura la última pantalla de la ventana secundaria (Noticias)
+                            base.capturaPantallaCompletaF("Noticias", "Ultima_antes_cerrar");
+                            // Cerrar la ventana secundaria
+                            driver.close();
+                            System.out.println(">>>>>> Ventana secundaria cerrada: " + h);
+                        } catch (Exception ex) {
+                            System.out.println(">>>>>> No se pudo cerrar ventana secundaria " + h + ": " + ex.getMessage());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println(">>>>>> Error detectando ventanas antes de Capsulas: " + e.getMessage());
+            }
+
+            // Asegurar que volvemos a la ventana principal original
+            try {
+                driver.switchTo().window(ventanaPrincipalOriginal);
+            } catch (Exception ex) {
+                System.out.println(">>>>>> No se pudo retornar a la ventana principal original: " + ex.getMessage());
+            }
+
             // Paso 10: Acceder a Cápsulas de ayuda por menú lateral
             System.out.println(">>>>>> Paso 10: Acceder a Cápsulas de ayuda por menú lateral");
             test.log(Status.INFO, "Paso 10: Acceder a Cápsulas de ayuda por menú lateral");
