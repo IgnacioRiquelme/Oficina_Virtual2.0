@@ -29,3 +29,17 @@ Clonado desde: `https://github.com/IgnacioRiquelme/Oficina_Virtual2.0`
 
 ## Contacto
 Ignacio Riquelme
+
+## Respaldo (automático)
+Se creó un respaldo del estado funcionando hasta "Cápsulas de ayuda" con el siguiente commit y rama remota:
+
+- Commit: `88c1bb0` — "Backup: estado funcionando hasta Cápsulas de ayuda (respaldo)"
+- Rama remota: `backup-capsulas-20251128` (pushed)
+
+Si necesitas restaurar este estado puedes:
+
+```powershell
+git switch -c restore-backup 88c1bb0
+```
+
+o revisar la rama remota en GitHub: `origin/backup-capsulas-20251128`.
