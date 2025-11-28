@@ -471,22 +471,157 @@ public class NuevaOficinaVirtualTest {
 
             // Click en acceso directo de Cápsulas de ayuda
             base.click(By.xpath("//article[@id='contenedorDashboardRapido']/section/a[@title='Cápsulas de ayuda']"));
-            // Esperar que se abra el modal
-            base.pausaPorElementoVisible(By.cssSelector(".modal"));
-            base.pausaFijaSeg(2);
+            base.pausaFijaSeg(3);
             // Captura: Cápsulas de ayuda desde acceso directo
             base.capturaPantallaCompletaF("CapsulasAyuda", "Desde_Acceso_Directo");
             System.out.println(">>>>>> Cápsulas de ayuda desde acceso directo capturado");
             test.log(Status.INFO, "Cápsulas de ayuda desde acceso directo capturado");
 
-            // Cerrar modal de Cápsulas de ayuda
-            base.pausaPorElementoVisible(By.cssSelector("a.pestanas-cerrar"));
-            WebElement closeButton3 = driver.findElement(By.cssSelector("a.pestanas-cerrar"));
-            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", closeButton3);
-            base.pausaPorElemento(By.cssSelector(".modal"));
+            // Cerrar modal o ventana si existe
+            base.cerrarModalSiExiste();
             base.pausaFijaSeg(2);
-            System.out.println(">>>>>> Modal de Cápsulas de ayuda cerrado");
-            test.log(Status.INFO, "Modal de Cápsulas de ayuda cerrado");
+            System.out.println(">>>>>> Modal o ventana de Cápsulas de ayuda cerrado (si existía)");
+            test.log(Status.INFO, "Modal o ventana de Cápsulas de ayuda cerrado (si existía)");
+
+            // Volver a la página principal y cerrar cualquier segunda pestaña abierta
+            try {
+                Set<String> handlesFinal = driver.getWindowHandles();
+                for (String h : handlesFinal) {
+                    if (!h.equals(ventanaPrincipalOriginal)) {
+                        try {
+                            driver.switchTo().window(h);
+                            base.pausaFijaSeg(1);
+                            // Captura la última pantalla antes de cerrar
+                            base.capturaPantallaCompletaF("ExtraPage", "Antes_Cerrar_Final");
+                            // Cerrar la ventana secundaria
+                            driver.close();
+                            System.out.println(">>>>>> Ventana secundaria final cerrada: " + h);
+                        } catch (Exception ex) {
+                            System.out.println(">>>>>> No se pudo cerrar ventana secundaria final " + h + ": " + ex.getMessage());
+                        }
+                    }
+                }
+                // Volver a la ventana principal original
+                driver.switchTo().window(ventanaPrincipalOriginal);
+                System.out.println(">>>>>> Retornado a la página principal original");
+            } catch (Exception e) {
+                System.out.println(">>>>>> Error cerrando ventanas finales: " + e.getMessage());
+            }
+
+            // 2) Ir a Accesos Rápidos -> Ayuda en Línea (icono con <em class='bci-icon color'>) y capturar
+            try {
+                By accesosAyuda = By.xpath("//article[@id='contenedorDashboardRapido']/section/a[3]");
+                base.pausaPorElementoVisible(accesosAyuda);
+                // Hover y captura previa
+                Actions act = new Actions(driver);
+                act.moveToElement(driver.findElement(accesosAyuda)).perform();
+                base.pausaFijaSeg(2);
+                base.capturaPantallaCompletaF("AyudaEnLinea", "Hover_Accesos_Rapidos");
+
+                // Click en Accesos Rápidos -> Ayuda en Línea
+                base.click(accesosAyuda);
+                base.pausaFijaSeg(5);
+                // Captura de la Ayuda en Línea
+                base.capturaPantallaCompletaF("AyudaEnLinea", "Desde_Accesos_Rapidos");
+                System.out.println(">>>>>> Accedido a Ayuda en Línea desde Accesos Rápidos y capturado");
+
+                // Si abrió una nueva pestaña/ventana, cerrarla y volver a la principal
+                try {
+                    Set<String> afterAccesos = driver.getWindowHandles();
+                    for (String h : afterAccesos) {
+                        if (!h.equals(ventanaPrincipalOriginal)) {
+                            driver.switchTo().window(h);
+                            base.pausaFijaSeg(1);
+                            driver.close();
+                            System.out.println(">>>>>> Cerrada pestaña abierta por Accesos Rápidos: " + h);
+                        }
+                    }
+                    driver.switchTo().window(ventanaPrincipalOriginal);
+                } catch (Exception ex2) {
+                    System.out.println(">>>>>> Error cerrando pestaña de Accesos Rápidos: " + ex2.getMessage());
+                }
+            } catch (Exception e) {
+                System.out.println(">>>>>> No se pudo acceder a Accesos Rápidos -> Ayuda en Línea: " + e.getMessage());
+            }
+
+            // Abrir Servicios de Información desde menú lateral nuevamente
+            try {
+                // Abrir menú desplegable
+                base.click(By.id("menu-desplegable"));
+                base.pausaFijaSeg(2);
+                base.pausaPorElementoVisible(By.id("menu-serviciosdeinformación"));
+
+                // Click en Servicios de Información
+                base.click(By.id("menu-serviciosdeinformación"));
+                base.pausaFijaSeg(2);
+                // Captura: Servicios de Información abierto desde menú lateral
+                base.capturaPantallaCompletaF("ServiciosInformacion", "Desde_Menu_Lateral_Final");
+                System.out.println(">>>>>> Servicios de Información abierto desde menú lateral nuevamente");
+                test.log(Status.INFO, "Servicios de Información abierto desde menú lateral nuevamente");
+
+                // Seleccionar pestaña Comisiones
+                By comisionesTab = By.xpath("//section[@id='ContenedorGenerales']/header/ul/li[2]");
+                base.pausaPorElementoVisible(comisionesTab);
+                base.click(comisionesTab);
+                base.pausaFijaSeg(1);
+
+                // Rellenar campos desde Principal.json (datos2)
+                String periodo = base.obtenerJason("Principal", "datos2", "periodo");
+                String quincena = base.obtenerJason("Principal", "datos2", "quincena");
+                String rutContratante = base.obtenerJason("Principal", "datos2", "rutContratante");
+                String rutCorredor = base.obtenerJason("Principal", "datos2", "rutCorredor");
+                String corredor = base.obtenerJason("Principal", "datos2", "corredor");
+
+                // Periodo: input tipo fecha
+                By periodoInput = By.xpath("//div/div[2]/header[1]/section/p/input");
+                base.pausaPorElementoVisible(periodoInput);
+                base.insertarDatos(periodo, periodoInput);
+                base.pausaFijaSeg(1);
+
+                // Quincena: ingresar "1" en el input del combobox
+                By quincenaInput = By.xpath("//div[@id='vs3__combobox']/div[1]/input");
+                base.pausaPorElementoVisible(quincenaInput);
+                base.insertarDatos("1", quincenaInput);
+                base.pausaFijaSeg(1);
+
+                // RUT Contratante
+                By rutContratanteInput = By.xpath("//input[@placeholder='RUT CONTRATANTE']");
+                base.pausaPorElementoVisible(rutContratanteInput);
+                base.insertarDatos(rutContratante, rutContratanteInput);
+                base.pausaFijaSeg(1);
+
+                // RUT Corredor
+                By rutCorredorInput = By.xpath("//input[@placeholder='RUT CORREDOR']");
+                base.pausaPorElementoVisible(rutCorredorInput);
+                base.insertarDatos(rutCorredor, rutCorredorInput);
+                base.pausaFijaSeg(1);
+
+                // Corredor
+                By corredorInput = By.xpath("//input[@placeholder='CORREDOR']");
+                base.pausaPorElementoVisible(corredorInput);
+                base.insertarDatos(corredor, corredorInput);
+                base.pausaFijaSeg(1);
+
+                // Captura del formulario de Comisiones relleno
+                base.capturaPantallaCompletaF("Comisiones", "Formulario_Relleno_Final");
+                System.out.println(">>>>>> Formulario de Comisiones rellenado con todos los datos del JSON");
+                test.log(Status.INFO, "Formulario de Comisiones rellenado con todos los datos del JSON");
+
+                // Hacer click en buscar
+                By buscarButton = By.cssSelector("a.boton.bg-azul");
+                base.pausaPorElementoVisible(buscarButton);
+                base.click(buscarButton);
+                base.pausaFijaSeg(3);
+                // Captura de resultados de búsqueda
+                base.capturaPantallaCompletaF("Comisiones", "Resultados_Busqueda");
+                System.out.println(">>>>>> Búsqueda de comisiones realizada");
+                test.log(Status.INFO, "Búsqueda de comisiones realizada");
+
+                // Cerrar modal
+                base.cerrarModalSiExiste();
+            } catch (Exception e) {
+                System.out.println(">>>>>> Error en Servicios de Información y Comisiones: " + e.getMessage());
+            }
 
             test.log(Status.PASS, "Flujo completo ejecutado exitosamente");
         } catch (Exception e) {
