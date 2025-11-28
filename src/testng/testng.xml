@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Test Suite">
+    <listeners>
+        <listener class-name="oficinaVirtual.src.java.pom.TestListener"/>
+    </listeners>
+    
+    <test name="Regression Tests">
+        <classes>
+            <class name="oficinaVirtual.oficinaVirtualPom"/>
+            <!-- Añade aquí el resto de tus clases de prueba -->
+        </classes>
+    </test>
+</suite>

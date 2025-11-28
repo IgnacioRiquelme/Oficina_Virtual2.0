@@ -1,0 +1,20 @@
+{
+
+   "datos1": {
+    "description": "Datos específicos para validación de login",
+    "user":"20578681-3",
+    "user2":"55555555",
+    "pasword": "abc123456",
+    "rutAsegurado": "14446449-4"
+  },
+
+  "datos2": {
+    "description": "Datos específicos para consulta de comisiones",
+    "periodo": "03/2025",
+    "quincena": "0",
+    "rutContratante": "17253484-8",
+    "rutCorredor": "77508900-8", 
+    "corredor": "THB CHILE CORREDORES"
+  }
+
+}

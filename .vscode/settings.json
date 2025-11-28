@@ -1,0 +1,7 @@
+{
+    "commentTranslate.targetLanguage": "en",
+    "maven.view": "flat",
+    "git.ignoreLimitWarning": true,
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "interactive"
+}
