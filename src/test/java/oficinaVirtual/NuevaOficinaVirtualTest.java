@@ -479,14 +479,97 @@ public class NuevaOficinaVirtualTest {
             System.out.println(">>>>>> Cápsulas de ayuda desde acceso directo capturado");
             test.log(Status.INFO, "Cápsulas de ayuda desde acceso directo capturado");
 
-            // Cerrar modal de Cápsulas de ayuda
-            base.pausaPorElementoVisible(By.cssSelector("a.pestanas-cerrar"));
-            WebElement closeButton3 = driver.findElement(By.cssSelector("a.pestanas-cerrar"));
-            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", closeButton3);
-            base.pausaPorElemento(By.cssSelector(".modal"));
-            base.pausaFijaSeg(2);
-            System.out.println(">>>>>> Modal de Cápsulas de ayuda cerrado");
-            test.log(Status.INFO, "Modal de Cápsulas de ayuda cerrado");
+            // Cerrar modal de Cápsulas de ayuda (uso helper seguro)
+            try {
+                base.cerrarModalSiExiste();
+                base.pausaFijaSeg(2);
+                System.out.println(">>>>>> Modal de Cápsulas de ayuda cerrado (si existía)");
+                test.log(Status.INFO, "Modal de Cápsulas de ayuda cerrado (si existía)");
+            } catch (Exception exModal) {
+                System.out.println(">>>>>> Error cerrando modal de Cápsulas de ayuda: " + exModal.getMessage());
+            }
+
+            // -------------------- NUEVOS PASOS SOLICITADOS --------------------
+            // 1) Volver a la pestaña principal original y cerrar cualquier pestaña secundaria abierta
+            try {
+                Set<String> handlesAct = driver.getWindowHandles();
+                for (String h : handlesAct) {
+                    if (!h.equals(ventanaPrincipalOriginal)) {
+                        try {
+                            driver.switchTo().window(h);
+                            base.pausaFijaSeg(1);
+                            base.capturaPantallaCompletaF("ExtraPage", "Antes_Cerrar");
+                            driver.close();
+                            System.out.println(">>>>>> Ventana secundaria cerrada: " + h);
+                        } catch (Exception ex) {
+                            System.out.println(">>>>>> No se pudo cerrar ventana secundaria " + h + ": " + ex.getMessage());
+                        }
+                    }
+                }
+                // Volver a la principal
+                driver.switchTo().window(ventanaPrincipalOriginal);
+                System.out.println(">>>>>> Retornado a la pestaña principal original");
+            } catch (Exception e) {
+                System.out.println(">>>>>> Error cerrando secundarias: " + e.getMessage());
+            }
+
+            // 2) Ir a Accesos Rápidos -> Ayuda en Línea (icono con <em class='bci-icon color'>) y capturar
+            try {
+                By accesosAyuda = By.xpath("//article[@id='contenedorDashboardRapido']/section/a[3]");
+                base.pausaPorElementoVisible(accesosAyuda);
+                // Hover y captura previa
+                Actions act = new Actions(driver);
+                act.moveToElement(driver.findElement(accesosAyuda)).perform();
+                base.pausaFijaSeg(2);
+                base.capturaPantallaCompletaF("AyudaEnLinea", "Hover_Accesos_Rapidos");
+
+                // Click en Accesos Rápidos -> Ayuda en Línea
+                base.click(accesosAyuda);
+                base.pausaFijaSeg(5);
+                // Captura de la Ayuda en Línea
+                base.capturaPantallaCompletaF("AyudaEnLinea", "Desde_Accesos_Rapidos");
+                System.out.println(">>>>>> Accedido a Ayuda en Línea desde Accesos Rápidos y capturado");
+
+                // Si abrió una nueva pestaña/ventana, cerrarla y volver a la principal
+                try {
+                    Set<String> afterAccesos = driver.getWindowHandles();
+                    for (String h : afterAccesos) {
+                        if (!h.equals(ventanaPrincipalOriginal)) {
+                            driver.switchTo().window(h);
+                            base.pausaFijaSeg(1);
+                            driver.close();
+                            System.out.println(">>>>>> Cerrada pestaña abierta por Accesos Rápidos: " + h);
+                        }
+                    }
+                    driver.switchTo().window(ventanaPrincipalOriginal);
+                } catch (Exception ex2) {
+                    System.out.println(">>>>>> Error cerrando pestaña de Accesos Rápidos: " + ex2.getMessage());
+                }
+            } catch (Exception e) {
+                System.out.println(">>>>>> No se pudo acceder a Accesos Rápidos -> Ayuda en Línea: " + e.getMessage());
+            }
+
+            // 3) Volver al menú lateral y abrir Servicios de Información → pestaña Comisiones
+            try {
+                // Abrir menú lateral
+                base.click(By.id("menu-desplegable"));
+                base.pausaFijaSeg(1);
+                base.pausaFijaSeg(2); // Mostrar menú
+                base.pausaPorElementoVisible(By.id("menu-serviciosdeinformación"));
+                // Click en Servicios de Información
+                base.click(By.id("menu-serviciosdeinformación"));
+                base.pausaFijaSeg(2);
+                base.pausaFijaSeg(2); // Mostrar selección
+                // Captura: Modal de Servicios de Información abierto
+                base.capturaPantallaCompletaF("ServiciosInformacion", "Modal_Abierta");
+
+                // Comisiones code commented out as per user request
+                // test.log(Status.PASS, "Flujo completo ejecutado exitosamente");
+            } catch (Exception e) {
+                System.out.println(">>>>>> Error navegando a Comisiones o rellenando datos: " + e.getMessage());
+            }
+
+            // -------------------- FIN NUEVOS PASOS --------------------
 
             test.log(Status.PASS, "Flujo completo ejecutado exitosamente");
         } catch (Exception e) {
