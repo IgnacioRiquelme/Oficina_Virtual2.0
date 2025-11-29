@@ -572,35 +572,36 @@ public class NuevaOficinaVirtualTest {
                 String rutCorredor = base.obtenerJason("Principal", "datos2", "rutCorredor");
                 String corredor = base.obtenerJason("Principal", "datos2", "corredor");
 
-                // Periodo: input tipo fecha
+                // Periodo: input tipo fecha (usar helper del page object)
+                poc.GG_Principal_Page principalPage = new poc.GG_Principal_Page(driver);
                 By periodoInput = By.xpath("//div/div[2]/header[1]/section/p/input");
-                base.pausaPorElementoVisible(periodoInput);
-                base.insertarDatos(periodo, periodoInput);
-                base.pausaFijaSeg(1);
+                principalPage.pausaPorElementoVisible(periodoInput);
+                principalPage.insertarDatos(periodo, periodoInput);
+                principalPage.pausaFijaMs(1000);
 
-                // Quincena: ingresar "1" en el input del combobox
+                // Quincena: seleccionar la opción usando el helper reutilizable (indice desde JSON)
                 By quincenaInput = By.xpath("//div[@id='vs3__combobox']/div[1]/input");
-                base.pausaPorElementoVisible(quincenaInput);
-                base.insertarDatos("1", quincenaInput);
-                base.pausaFijaSeg(1);
+                principalPage.pausaPorElementoVisible(quincenaInput);
+                principalPage.seleccionarVueSelectPorIndice(quincenaInput, quincena);
+                principalPage.pausaFijaMs(1000);
 
                 // RUT Contratante
-                By rutContratanteInput = By.xpath("//input[@placeholder='RUT CONTRATANTE']");
-                base.pausaPorElementoVisible(rutContratanteInput);
-                base.insertarDatos(rutContratante, rutContratanteInput);
-                base.pausaFijaSeg(1);
+                By rutContratanteInput = By.xpath("//div/div[2]/header[1]/section/p[2]/input");
+                principalPage.pausaPorElementoVisible(rutContratanteInput);
+                principalPage.insertarDatos(rutContratante, rutContratanteInput);
+                principalPage.pausaFijaMs(1000);
 
                 // RUT Corredor
-                By rutCorredorInput = By.xpath("//input[@placeholder='RUT CORREDOR']");
-                base.pausaPorElementoVisible(rutCorredorInput);
-                base.insertarDatos(rutCorredor, rutCorredorInput);
-                base.pausaFijaSeg(1);
+                By rutCorredorInput = By.xpath("//div/div[2]/header[1]/section/p[3]/input");
+                principalPage.pausaPorElementoVisible(rutCorredorInput);
+                principalPage.insertarDatos(rutCorredor, rutCorredorInput);
+                principalPage.pausaFijaMs(1000);
 
-                // Corredor
-                By corredorInput = By.xpath("//input[@placeholder='CORREDOR']");
-                base.pausaPorElementoVisible(corredorInput);
-                base.insertarDatos(corredor, corredorInput);
-                base.pausaFijaSeg(1);
+                // Corredor: usar el selector especializado del page object
+                By cboCorredorLocator = By.id("vs4__combobox");
+                principalPage.pausaPorElementoVisible(cboCorredorLocator);
+                principalPage.selecComboCorredor(cboCorredorLocator, corredor);
+                principalPage.pausaFijaMs(2000); // Pausa extra para que se complete la selección
 
                 // Captura del formulario de Comisiones relleno
                 base.capturaPantallaCompletaF("Comisiones", "Formulario_Relleno_Final");
@@ -608,8 +609,8 @@ public class NuevaOficinaVirtualTest {
                 test.log(Status.INFO, "Formulario de Comisiones rellenado con todos los datos del JSON");
 
                 // Hacer click en buscar
-                By buscarButton = By.cssSelector("a.boton.bg-azul");
-                base.pausaPorElementoVisible(buscarButton);
+                By buscarButton = By.xpath("//div/div[2]/header[1]/section/a");
+                base.pausaPorElementoClikeable(buscarButton);
                 base.click(buscarButton);
                 base.pausaFijaSeg(3);
                 // Captura de resultados de búsqueda
