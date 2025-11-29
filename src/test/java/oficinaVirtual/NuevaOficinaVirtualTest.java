@@ -585,11 +585,6 @@ public class NuevaOficinaVirtualTest {
                 principalPage.seleccionarVueSelectPorIndice(quincenaInput, quincena);
                 principalPage.pausaFijaMs(1000);
 
-                // RUT Contratante
-                By rutContratanteInput = By.xpath("//div/div[2]/header[1]/section/p[2]/input");
-                principalPage.pausaPorElementoVisible(rutContratanteInput);
-                principalPage.insertarDatos(rutContratante, rutContratanteInput);
-                principalPage.pausaFijaMs(1000);
 
                 // RUT Corredor
                 By rutCorredorInput = By.xpath("//div/div[2]/header[1]/section/p[3]/input");
@@ -618,10 +613,76 @@ public class NuevaOficinaVirtualTest {
                 System.out.println(">>>>>> Búsqueda de comisiones realizada");
                 test.log(Status.INFO, "Búsqueda de comisiones realizada");
 
+                // Descargar Excel de Comisiones
+                By descargarComisionesBtn = By.xpath("//button[@onclick=\"$('#tipoDocumentoComi').val('xlsx');\"]");
+                base.pausaPorElementoVisible(descargarComisionesBtn);
+                base.click(descargarComisionesBtn);
+                base.pausaFijaSeg(5); // Esperar descarga
+                System.out.println(">>>>>> Excel de Comisiones descargado");
+                test.log(Status.INFO, "Excel de Comisiones descargado");
+
+                // Capturar pantalla después de descarga
+                base.capturaPantallaCompletaF("Excel_Comisiones", "Descargado");
+                System.out.println(">>>>>> Pantalla de descarga de Comisiones capturada");
+                test.log(Status.INFO, "Pantalla de descarga de Comisiones capturada");
+
                 // Cerrar modal
                 base.cerrarModalSiExiste();
+
+                // Ir nuevamente a menú lateral y seleccionar Búsqueda Rápida
+                base.click(By.id("menu-desplegable"));
+                base.pausaFijaSeg(2);
+                base.pausaPorElementoVisible(By.id("menu-búsquedarápida"));
+                base.click(By.id("menu-búsquedarápida"));
+                base.pausaFijaSeg(2);
+                System.out.println(">>>>>> Navegado a Búsqueda Rápida nuevamente");
+                test.log(Status.INFO, "Navegado a Búsqueda Rápida nuevamente");
+
+                // Ir a la segunda pestaña: Seguros de Vida y Salud
+                By tabVidaSalud = By.xpath("//li[contains(text(),'Seguros de Vida y Salud')]");
+                base.pausaPorElementoVisible(tabVidaSalud);
+                base.click(tabVidaSalud);
+                base.pausaFijaSeg(2);
+                System.out.println(">>>>>> Pestaña Seguros de Vida y Salud seleccionada");
+                test.log(Status.INFO, "Pestaña Seguros de Vida y Salud seleccionada");
+
+                // Ingresar RUT a consultar (RUT ya seleccionado por defecto)
+                By inputRutVida = By.xpath("//div[@id='app-buscador']/section/div[2]/div/header/section/div[1]/p/input");
+                base.pausaPorElementoClikeable(inputRutVida);
+                base.insertarDatos(rutContratante, inputRutVida);
+                System.out.println(">>>>>> RUT ingresado para Vida y Salud: " + rutContratante);
+                test.log(Status.INFO, "RUT ingresado para Vida y Salud: " + rutContratante);
+
+                // Hacer click en buscar
+                By buscarVidaBtn = By.xpath("//button[text()=' Buscar']");
+                base.pausaPorElementoClikeable(buscarVidaBtn);
+                base.click(buscarVidaBtn);
+                base.pausaFijaSeg(3);
+                // Captura de resultados de búsqueda Vida y Salud
+                base.capturaPantallaCompletaF("VidaSalud", "Resultados_Busqueda");
+                System.out.println(">>>>>> Búsqueda de Vida y Salud realizada");
+                test.log(Status.INFO, "Búsqueda de Vida y Salud realizada");
+
+                // Descargar Excel de Vida y Salud
+                By descargarVidaBtn = By.xpath("//button[@onclick=\"$('#TipoDescargaProduccionVida').val('xlsx');\"]");
+                base.pausaPorElementoVisible(descargarVidaBtn);
+                base.click(descargarVidaBtn);
+                base.pausaFijaSeg(5); // Esperar descarga
+                System.out.println(">>>>>> Excel de Vida y Salud descargado");
+                test.log(Status.INFO, "Excel de Vida y Salud descargado");
+
+                // Capturar pantalla después de descarga
+                base.capturaPantallaCompletaF("Excel_VidaSalud", "Descargado");
+                System.out.println(">>>>>> Pantalla de descarga de Vida y Salud capturada");
+                test.log(Status.INFO, "Pantalla de descarga de Vida y Salud capturada");
+
+                // Captura final y cerrar página
+                base.capturaPantallaCompletaF("Final", "Test_Completado");
+                System.out.println(">>>>>> Test completado exitosamente");
+                test.log(Status.INFO, "Test completado exitosamente");
+
             } catch (Exception e) {
-                System.out.println(">>>>>> Error en Servicios de Información y Comisiones: " + e.getMessage());
+                System.out.println(">>>>>> Error en Servicios de Información, Comisiones o Vida y Salud: " + e.getMessage());
             }
 
             test.log(Status.PASS, "Flujo completo ejecutado exitosamente");
