@@ -2,6 +2,5 @@ poc\GG_Login_Page.class
 exceptions\confirmaProceso.class
 pom\CC_Base.class
 pom\CC_Variables_Globales.class
-poc\GG_Principal_Page.class
 pom\ExtentReportManager.class
 pom\TestListener.class

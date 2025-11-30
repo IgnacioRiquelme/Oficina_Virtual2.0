@@ -15,6 +15,8 @@ import java.time.Duration;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import java.util.List;
+import java.util.Arrays;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
@@ -68,10 +70,6 @@ public class NuevaOficinaVirtualTest {
 
             // Pausa para captura
             base.pausaFijaSeg(2);
-            // Captura de pantalla completa antes del enter
-            base.capturaPantallaCompletaF("Login", "Pantalla_Login");
-
-            // Hacer click en login
             base.click(By.id("login-boton"));
             System.out.println(">>>>>> Login realizado exitosamente");
             test.log(Status.INFO, "Login realizado exitosamente");
@@ -121,10 +119,30 @@ public class NuevaOficinaVirtualTest {
             System.out.println(">>>>>> Datos de búsqueda completados");
             test.log(Status.INFO, "Datos de búsqueda completados");
 
-            // Paso 5: Hacer click en buscar
+            // Paso 5: Hacer click en buscar (robusto: reintentos + fallback JS)
             System.out.println(">>>>>> Paso 5: Hacer click en buscar");
             test.log(Status.INFO, "Paso 5: Hacer click en buscar");
-            base.click(By.id("btBusqueda"));
+            By buscarInicial = By.id("btBusqueda");
+            boolean clickedInicial = base.clickComoIcono(buscarInicial);
+            if (!clickedInicial) {
+                try {
+                    // última oportunidad: JS click directo
+                    WebElement buscarEl = driver.findElement(buscarInicial);
+                    ((JavascriptExecutor) driver).executeScript("arguments[0].click();", buscarEl);
+                    System.out.println(">>>>>> Fallback JS click en Buscar (inicial) ejecutado");
+                } catch (Exception e) {
+                    System.out.println(">>>>>> Error en Servicios de Información, Comisiones o Vida y Salud: " + e.getMessage());
+                    try {
+                        // Capturar evidencia visual del fallo
+                        base.capturaPantallaCompletaF("Error_Flujo", "Servicios_Comisiones_Vida_Error");
+                    } catch (Exception exCap) {
+                        System.out.println("No se pudo capturar pantalla de error: " + exCap.getMessage());
+                    }
+                    // Registrar fallo en el reporte y relanzar para que la prueba falle correctamente
+                    test.log(Status.FAIL, "Error en Servicios/Comisiones/Vida y Salud: " + e.getMessage());
+                    throw e;
+                }
+            }
 
             // Pausa para captura de resultados
             base.pausaFijaSeg(2);
@@ -603,10 +621,20 @@ public class NuevaOficinaVirtualTest {
                 System.out.println(">>>>>> Formulario de Comisiones rellenado con todos los datos del JSON");
                 test.log(Status.INFO, "Formulario de Comisiones rellenado con todos los datos del JSON");
 
-                // Hacer click en buscar
+                // Hacer click en buscar (usar reintentos y fallback JS si está bloqueado)
                 By buscarButton = By.xpath("//div/div[2]/header[1]/section/a");
-                base.pausaPorElementoClikeable(buscarButton);
-                base.click(buscarButton);
+                // Intentar click robusto con reintentos
+                boolean clicked = base.reintentarClick(buscarButton);
+                if (!clicked) {
+                    try {
+                        WebElement buscarEl = driver.findElement(buscarButton);
+                        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", buscarEl);
+                        System.out.println(">>>>>> Fallback JS click en Buscar ejecutado");
+                    } catch (Exception ex) {
+                        System.out.println(">>>>>> No se pudo hacer click en Buscar: " + ex.getMessage());
+                        throw ex;
+                    }
+                }
                 base.pausaFijaSeg(3);
                 // Captura de resultados de búsqueda
                 base.capturaPantallaCompletaF("Comisiones", "Resultados_Busqueda");
@@ -653,23 +681,55 @@ public class NuevaOficinaVirtualTest {
                 System.out.println(">>>>>> RUT ingresado para Vida y Salud: " + rutContratante);
                 test.log(Status.INFO, "RUT ingresado para Vida y Salud: " + rutContratante);
 
-                // Hacer click en buscar
-                By buscarVidaBtn = By.xpath("//button[text()=' Buscar']");
+                // Hacer click en buscar (Vida y Salud) usando el locator que funciona en el proyecto
+                By buscarVidaBtn = By.xpath("//div[@id='app-buscador']/section/div[2]/div/header/section/button");
                 base.pausaPorElementoClikeable(buscarVidaBtn);
                 base.click(buscarVidaBtn);
+                System.out.println(">>>>>> Buscar Vida y Salud ejecutado");
                 base.pausaFijaSeg(3);
                 // Captura de resultados de búsqueda Vida y Salud
                 base.capturaPantallaCompletaF("VidaSalud", "Resultados_Busqueda");
                 System.out.println(">>>>>> Búsqueda de Vida y Salud realizada");
                 test.log(Status.INFO, "Búsqueda de Vida y Salud realizada");
 
-                // Descargar Excel de Vida y Salud
-                By descargarVidaBtn = By.xpath("//button[@onclick=\"$('#TipoDescargaProduccionVida').val('xlsx');\"]");
-                base.pausaPorElementoVisible(descargarVidaBtn);
-                base.click(descargarVidaBtn);
-                base.pausaFijaSeg(5); // Esperar descarga
-                System.out.println(">>>>>> Excel de Vida y Salud descargado");
-                test.log(Status.INFO, "Excel de Vida y Salud descargado");
+                // Descargar Excel de Vida y Salud (fallback: probar varios selectores y click robusto)
+                List<By> descargarLocators = Arrays.asList(
+                    By.xpath("//button[@onclick=\"$('#TipoDescargaProduccionVida').val('xlsx');\"]"),
+                    By.xpath("//form[@action='/Busqueda/ExportarBusquedaVida']/button"),
+                    By.xpath("//button[contains(normalize-space(.),'Descargar') and contains(normalize-space(.),'Vida') ]"),
+                    By.xpath("//button[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'excel')]")
+                );
+
+                boolean downloaded = false;
+                for (By loc : descargarLocators) {
+                    try {
+                        base.pausaPorElementoVisible(loc);
+                        boolean clickedDownload = base.reintentarClick(loc);
+                        if (!clickedDownload) {
+                            try {
+                                WebElement el = driver.findElement(loc);
+                                ((JavascriptExecutor) driver).executeScript("arguments[0].click();", el);
+                            } catch (Exception jsEx) {
+                                // continuar a siguiente locator
+                                continue;
+                            }
+                        }
+                        // esperar breve tiempo a que la descarga/acción se dispare
+                        base.pausaFijaSeg(5);
+                        downloaded = true;
+                        System.out.println(">>>>>> Excel de Vida y Salud descargado via locator: " + loc.toString());
+                        test.log(Status.INFO, "Excel de Vida y Salud descargado via locator: " + loc.toString());
+                        break;
+                    } catch (Exception e) {
+                        // intentar siguiente locator
+                    }
+                }
+
+                if (!downloaded) {
+                    try { base.capturaPantallaCompletaF("Error_Flujo", "Vida_Descarga_NoEncontrada"); } catch (Exception ignore) {}
+                    test.log(Status.FAIL, "No se pudo encontrar botón de descarga Vida y Salud con locators conocidos");
+                    throw new RuntimeException("No se pudo encontrar botón descarga Vida y Salud con locators conocidos");
+                }
 
                 // Capturar pantalla después de descarga
                 base.capturaPantallaCompletaF("Excel_VidaSalud", "Descargado");
@@ -683,8 +743,12 @@ public class NuevaOficinaVirtualTest {
 
             } catch (Exception e) {
                 System.out.println(">>>>>> Error en Servicios de Información, Comisiones o Vida y Salud: " + e.getMessage());
+                try { base.capturaPantallaCompletaF("Error_Flujo", "Servicios_Comisiones_Vida_Error"); } catch (Exception ignore) {}
+                // Relanzar para que la excepción llegue al catch externo y la prueba falle correctamente
+                throw e;
             }
 
+            // Si llegamos aquí sin excepciones, marcar PASS
             test.log(Status.PASS, "Flujo completo ejecutado exitosamente");
         } catch (Exception e) {
             test.log(Status.FAIL, "Error en el flujo: " + e.getMessage());

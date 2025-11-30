@@ -472,9 +472,34 @@ public class GG_Principal_Page extends CC_Base {
         capturaPantallaCompletaF(var, "3_Menu_Busqueda_Rapida");
         pausaPorElementoClikeable(btnSeguroVidaSalud); click(btnSeguroVidaSalud);
         pausaPorElementoLocaizado(txtRutVidaSalud); insertarDatos(rutContratante, txtRutVidaSalud);
-        pausaPorElementoClikeable(btnBusVidaSalud); click(btnBusVidaSalud);
-        pausaFijaMs(1000);
-        //pausaPorElementoLocaizado(dgdDatosVidaSalud);
+        // Intentar click robusto en botón BUSCAR (Vida y Salud): reintentos + JS fallback
+        boolean clickedVida = false;
+        try {
+            pausaPorElementoClikeable(btnBusVidaSalud);
+            clickedVida = reintentarClick(btnBusVidaSalud);
+            if (!clickedVida) {
+                // JS fallback
+                try {
+                    WebElement elBus = driver.findElement(btnBusVidaSalud);
+                    ((JavascriptExecutor) driver).executeScript("arguments[0].click();", elBus);
+                    System.out.println("<<<< Fallback JS click en Buscar Vida y Salud ejecutado >>>>");
+                    clickedVida = true;
+                } catch (Exception jsEx) {
+                    System.out.println("<<<< Fallback JS click falló: " + jsEx.getMessage());
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("<<<< Error intentando click en Buscar Vida y Salud: " + ex.getMessage());
+        }
+
+        if (!clickedVida) {
+            capturaPantallaCompletaF(var, "Error_Click_Buscar_Vida");
+            throw new confirmaProceso("No se pudo accionar el botón Buscar Vida y Salud");
+        }
+
+        // Esperar a que el DOM se estabilice y a que aparezcan los resultados
+        waitDomStable(Duration.ofSeconds(15), Duration.ofMillis(1000));
+        try { waitForVisibilityOfElement(dgdDatosVidaSalud, 25); } catch (Exception e) { /* dejar flujo llegue al if siguiente */ }
             if (elementoVisible(dgdDatosVidaSalud)) {
                 System.out.println("Se visualiza la busqueda de Vida y Salud");
                 //waitDomStable(Duration.ofSeconds(10), Duration.ofMillis(1000));
@@ -485,6 +510,15 @@ public class GG_Principal_Page extends CC_Base {
                 pausaFijaMs(5000);
                 capturaPantallaCompletaF(var, "5_Descarga_XLS_Vida_Salud");
             } else {
+                // Guardar page source para diagnóstico antes de lanzar excepción
+                try {
+                    String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
+                    String ruta = pom.CC_Variables_Globales.PATH_CAPTURA + "PageSource_Vida_" + timestamp + ".html";
+                    java.nio.file.Files.writeString(java.nio.file.Path.of(ruta), driver.getPageSource());
+                    System.out.println("Saved page source to: " + ruta);
+                } catch (Exception exps) {
+                    System.out.println("No se pudo guardar page source: " + exps.getMessage());
+                }
                 throw new confirmaProceso("No se encontró la busqueda de Vida y Salud");
             }
 

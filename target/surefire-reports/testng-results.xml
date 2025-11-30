@@ -5,27 +5,27 @@
       <![CDATA[>>>>>> Info: Launching.....https://oficinavirtual.bciseguros.cl/]]>
     </line>
   </reporter-output>
-  <suite started-at="2025-11-28T17:58:39 CLST" name="SuiteoficinaVirtual" finished-at="2025-11-28T18:01:27 CLST" duration-ms="167878">
+  <suite started-at="2025-11-29T22:25:02 CLST" name="Surefire suite" finished-at="2025-11-29T22:27:38 CLST" duration-ms="155609">
     <groups>
     </groups>
-    <test started-at="2025-11-28T17:58:39 CLST" name="pruebasoficinaVirtual" finished-at="2025-11-28T18:01:27 CLST" duration-ms="167878">
+    <test started-at="2025-11-29T22:25:02 CLST" name="Surefire test" finished-at="2025-11-29T22:27:38 CLST" duration-ms="155609">
       <class name="oficinaVirtual.NuevaOficinaVirtualTest">
-        <test-method is-config="true" signature="setup()[pri:0, instance:oficinaVirtual.NuevaOficinaVirtualTest@293a5bf6]" started-at="2025-11-28T17:58:39 CLST" name="setup" finished-at="2025-11-28T17:58:42 CLST" duration-ms="3472" status="PASS">
+        <test-method is-config="true" signature="setup()[pri:0, instance:oficinaVirtual.NuevaOficinaVirtualTest@3d51f06e]" started-at="2025-11-29T22:25:02 CLST" name="setup" finished-at="2025-11-29T22:25:06 CLST" duration-ms="4526" status="PASS">
           <reporter-output>
             <line>
               <![CDATA[>>>>>> Info: Launching.....https://oficinavirtual.bciseguros.cl/]]>
             </line>
           </reporter-output>
         </test-method> <!-- setup -->
-        <test-method signature="t001_Login_Busqueda_Rapida()[pri:0, instance:oficinaVirtual.NuevaOficinaVirtualTest@293a5bf6]" started-at="2025-11-28T17:58:42 CLST" name="t001_Login_Busqueda_Rapida" finished-at="2025-11-28T18:01:26 CLST" duration-ms="163911" status="PASS">
+        <test-method signature="t001_Login_Busqueda_Rapida()[pri:0, instance:oficinaVirtual.NuevaOficinaVirtualTest@3d51f06e]" started-at="2025-11-29T22:25:06 CLST" name="t001_Login_Busqueda_Rapida" finished-at="2025-11-29T22:27:37 CLST" duration-ms="150484" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- t001_Login_Busqueda_Rapida -->
-        <test-method is-config="true" signature="teardown()[pri:0, instance:oficinaVirtual.NuevaOficinaVirtualTest@293a5bf6]" started-at="2025-11-28T18:01:26 CLST" name="teardown" finished-at="2025-11-28T18:01:27 CLST" duration-ms="451" status="PASS">
+        <test-method is-config="true" signature="teardown()[pri:0, instance:oficinaVirtual.NuevaOficinaVirtualTest@3d51f06e]" started-at="2025-11-29T22:27:37 CLST" name="teardown" finished-at="2025-11-29T22:27:38 CLST" duration-ms="569" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- teardown -->
       </class> <!-- oficinaVirtual.NuevaOficinaVirtualTest -->
-    </test> <!-- pruebasoficinaVirtual -->
-  </suite> <!-- SuiteoficinaVirtual -->
+    </test> <!-- Surefire test -->
+  </suite> <!-- Surefire suite -->
 </testng-results>

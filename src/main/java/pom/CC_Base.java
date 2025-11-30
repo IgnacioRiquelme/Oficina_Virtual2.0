@@ -489,6 +489,54 @@ public class CC_Base {
         }
     }
 
+    /**
+     * Intento de click que replica comportamiento "como icono" usado en pasos que hacen click
+     * sobre elementos tipo <i> o <span>. Prueba varias estrategias: Actions click, click en child
+     * (i/span), JS click y por último reintentarClick.
+     * Devuelve true si alguno de los intentos tuvo éxito.
+     */
+    public boolean clickComoIcono(By locator) {
+        try {
+            WebElement element = driver.findElement(locator);
+
+            // 1) Intentar con Actions (moveTo + click)
+            try {
+                Actions actions = new Actions(driver);
+                actions.moveToElement(element).click().perform();
+                return true;
+            } catch (Exception ignored) {}
+
+            // 2) Intentar click en elementos internos comunes (<i>, <span>, <a>)
+            try {
+                List<WebElement> children = element.findElements(By.xpath(".//*[name() = 'i' or name() = 'span' or name() = 'a']"));
+                for (WebElement ch : children) {
+                    try {
+                        ch.click();
+                        return true;
+                    } catch (Exception ignoredChild) {
+                        try {
+                            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", ch);
+                            return true;
+                        } catch (Exception ignoredJs) {}
+                    }
+                }
+            } catch (Exception ignoredChildren) {}
+
+            // 3) Intentar JS click sobre el propio elemento
+            try {
+                ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+                return true;
+            } catch (Exception ignoredJs) {}
+
+            // 4) Por último, usar el reintentarClick existente
+            return reintentarClick(locator);
+        } catch (Exception e) {
+            // No se encontró el elemento o error grave
+            System.out.println("clickComoIcono: fallo detectado -> " + e.getMessage());
+            return false;
+        }
+    }
+
     // Cierra un modal específico si existe (usado sólo para el recuadro final con botón "Cerrar")
     public void cerrarModalSiExiste() {
         try {
